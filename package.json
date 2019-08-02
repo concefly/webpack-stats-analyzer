@@ -1,8 +1,8 @@
 {
   "name": "wsa",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "webpack stats 分析工具",
-  "main": "src/index.js",
+  "main": "src/lib/analyser.js",
   "bin": {
     "wsa": "src/bin/cli.js"
   },
@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "test": "jest --config jest.config.json",
-    "prepublish": "npm test"
+    "ci": "npm run test",
+    "prepublish": "npm run ci"
   },
   "repository": {
     "type": "git",
@@ -27,7 +28,8 @@
     "@types/jest": "^24.0.16",
     "@types/webpack": "^4.32.1",
     "jest": "^24.8.0",
-    "webpack": "^4.38.0"
+    "webpack": "^4.38.0",
+    "webpack-merge": "^4.2.1"
   },
   "dependencies": {
     "commander": "^2.20.0",

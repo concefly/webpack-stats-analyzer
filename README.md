@@ -12,6 +12,8 @@
   </a>
 </p>
 
+[![Build Status](https://travis-ci.org/concefly/webpack-stats-analyzer.svg?branch=master)](https://travis-ci.org/concefly/webpack-stats-analyzer)
+
 > webpack stats 分析工具
 
 ### 🏠 [Homepage](https://github.com/concefly/webpack-stats-analyzer#readme)

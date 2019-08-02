@@ -6,6 +6,9 @@
 const _ = require('lodash');
 const digraph = require('flat-tree-helper/dist/lib/digraph');
 
+/**
+ * @typedef {{ setStatsJson, getStatsJson, filterModuleByNameLike, getModuleTrace }} Analyser
+ */
 class Analyser {
   constructor(statsJson) {
     /** @type { Stats.ToJsonOutput } */
@@ -16,6 +19,14 @@ class Analyser {
 
   _throw(msg) {
     throw new Error(msg);
+  }
+
+  setStatsJson(statsJson) {
+    this.statsJson = statsJson;
+  }
+
+  getStatsJson() {
+    return this.statsJson;
   }
 
   *getModuleTrace(a, b) {
@@ -56,4 +67,6 @@ class Analyser {
   }
 }
 
-module.exports = { Analyser };
+module.exports = {
+  Analyser,
+};
