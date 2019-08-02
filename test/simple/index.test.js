@@ -1,15 +1,21 @@
 const { join } = require('path');
-const { createWebpackTestSuite } = require('../lib');
-const { Analyser } = require('../../src/index');
-const _ = require('lodash');
+const { build } = require('../lib');
+const { Analyser } = require('../../src/lib/analyser');
+const { DepDefence } = require('../../src/lib/webpack-plugin');
 
-createWebpackTestSuite('simple', {
-  entry: join(__dirname, 'fixture/index.js'),
-})
-  .add('getModuleTrace', statsJson => {
-    const ins = new Analyser(statsJson);
+const entry = join(__dirname, 'fixture/index.js');
+
+describe('Analyser', () => {
+  const analyser = new Analyser();
+
+  beforeAll(async () => {
+    const { statsJson } = await build({ entry });
+    analyser.setStatsJson(statsJson);
+  });
+
+  it('getModuleTrace', () => {
     const result = [
-      ...ins.getModuleTrace('./test/simple/fixture/c.js', './test/simple/fixture/index.js'),
+      ...analyser.getModuleTrace('./test/simple/fixture/c.js', './test/simple/fixture/index.js'),
     ];
 
     expect(
@@ -30,5 +36,55 @@ createWebpackTestSuite('simple', {
         { name: './test/simple/fixture/index.js' },
       ],
     ]);
-  })
-  .start();
+  });
+});
+
+describe('WebpackPlugin', () => {
+  const pluginTestBuild = async opt => {
+    return build({
+      entry,
+      plugins: [new DepDefence(opt)],
+    }).catch(e => e);
+  };
+
+  describe('moduleNoTrace', () => {
+    it('normal', async () => {
+      let error = await pluginTestBuild({
+        moduleNoTrace: [
+          {
+            source: './test/simple/fixture/c.js',
+            target: './test/simple/fixture/index.js',
+          },
+        ],
+      });
+
+      expect(error.message).toContain('moduleNoTrace');
+    });
+
+    it('批量 source 检查', async () => {
+      let error = await pluginTestBuild({
+        moduleNoTrace: [
+          {
+            source: /(a|b|c)\.js$/,
+            target: /index\.js$/,
+          },
+        ],
+      });
+
+      expect(error.message).toContain('moduleNoTrace');
+    });
+
+    it('批量 target 检查', async () => {
+      let error = await pluginTestBuild({
+        moduleNoTrace: [
+          {
+            source: /a\.js$/,
+            target: /(index|b)\.js$/,
+          },
+        ],
+      });
+
+      expect(error.message).toContain('moduleNoTrace');
+    });
+  });
+});
