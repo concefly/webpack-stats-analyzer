@@ -18,6 +18,17 @@
 
 ### 🏠 [Homepage](https://github.com/concefly/webpack-stats-analyzer#readme)
 
+```
+Usage: wsa [options] [command]
+
+Options:
+  -h, --help                                output usage information
+
+Commands:
+  filterModuleByNameLike <stats> <args...>  按名称模糊查询模块
+  getModuleTrace [options] <stats> <a> <b>  查找模块引用路径
+```
+
 ## Install
 
 ```sh
