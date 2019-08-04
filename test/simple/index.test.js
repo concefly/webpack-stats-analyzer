@@ -1,7 +1,7 @@
 const { join } = require('path');
 const { build } = require('../lib');
 const { Analyser } = require('../../src/lib/analyser');
-const { DepDefence } = require('../../src/lib/webpack-plugin');
+const { DepDefence } = require('../../src/lib/DepDefence');
 
 const entry = join(__dirname, 'fixture/index.js');
 
@@ -39,7 +39,7 @@ describe('Analyser', () => {
   });
 });
 
-describe('WebpackPlugin', () => {
+describe('DepDefence', () => {
   const pluginTestBuild = async opt => {
     return build({
       entry,
