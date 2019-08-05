@@ -103,9 +103,18 @@ class DepDefence {
             const traceForTest = [...trace];
             traceForTest.pop();
 
-            const isAsyncTrace = traceForTest.some(t =>
-              t.reasons.every(r => r.type.includes('import()'))
-            );
+            const isAsyncTrace = traceForTest.some(t => {
+              // 类似 import('./a.js')
+              const isAsyncImport = t.reasons.every(r => r.type.includes('import()'));
+
+              // 类似 require.context(..., 'lazy')
+              const isRequireContextLazy =
+                t.module.name.includes(' lazy ') &&
+                t.reasons.every(r => r.type.includes('require.context'));
+
+              return isAsyncImport || isRequireContextLazy;
+            });
+
             // 若找到非 async trace，就记录下来，并退出多重循环
             if (!isAsyncTrace) {
               const err = new Error('fake');

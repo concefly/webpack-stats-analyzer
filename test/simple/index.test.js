@@ -89,7 +89,7 @@ describe('DepDefence', () => {
   });
 
   describe('moduleOnlyAsyncTrace', () => {
-    it.only('存在同步引用关系会报错', async () => {
+    it('存在同步引用关系会报错', async () => {
       let { error } = await pluginTestBuild({
         moduleOnlyAsyncTrace: [
           {
@@ -101,12 +101,36 @@ describe('DepDefence', () => {
       expect(error.message).toContain('moduleOnlyAsyncTrace');
     });
 
-    it('只有异步引用关系不报错', async () => {
+    it('只有 import() 引用关系不报错', async () => {
       let { error } = await pluginTestBuild({
         moduleOnlyAsyncTrace: [
           {
             source: './test/simple/fixture/c.js',
             target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('只有 import() context 异步引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/import-context-x.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('只有 request lazy context 异步引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: 'require-context-lazy-',
+            target: 'b.js',
           },
         ],
       });
