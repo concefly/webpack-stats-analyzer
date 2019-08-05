@@ -44,12 +44,12 @@ describe('DepDefence', () => {
     return build({
       entry,
       plugins: [new DepDefence(opt)],
-    }).catch(e => e);
+    }).catch(error => ({ error }));
   };
 
   describe('moduleNoTrace', () => {
     it('normal', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: './test/simple/fixture/c.js',
@@ -62,7 +62,7 @@ describe('DepDefence', () => {
     });
 
     it('批量 source 检查', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: /(a|b|c)\.js$/,
@@ -75,7 +75,7 @@ describe('DepDefence', () => {
     });
 
     it('批量 target 检查', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: /a\.js$/,
@@ -85,6 +85,44 @@ describe('DepDefence', () => {
       });
 
       expect(error.message).toContain('moduleNoTrace');
+    });
+  });
+
+  describe('moduleOnlyAsyncTrace', () => {
+    it.only('存在同步引用关系会报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/c.js',
+            target: './test/simple/fixture/index.js',
+          },
+        ],
+      });
+      expect(error.message).toContain('moduleOnlyAsyncTrace');
+    });
+
+    it('只有异步引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/c.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('没有引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/a.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
     });
   });
 });
