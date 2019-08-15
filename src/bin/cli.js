@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const { Analyser } = require('../index');
+const { Analyser } = require('../analyser');
 const yaml = require('js-yaml');
 const program = require('commander');
 const _ = require('lodash');
