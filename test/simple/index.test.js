@@ -1,7 +1,7 @@
 const { join } = require('path');
 const { build } = require('../lib');
 const { Analyser } = require('../../src/lib/analyser');
-const { DepDefence } = require('../../src/lib/webpack-plugin');
+const { DepDefence } = require('../../src/lib/DepDefence');
 
 const entry = join(__dirname, 'fixture/index.js');
 
@@ -39,17 +39,17 @@ describe('Analyser', () => {
   });
 });
 
-describe('WebpackPlugin', () => {
+describe('DepDefence', () => {
   const pluginTestBuild = async opt => {
     return build({
       entry,
       plugins: [new DepDefence(opt)],
-    }).catch(e => e);
+    }).catch(error => ({ error }));
   };
 
   describe('moduleNoTrace', () => {
     it('normal', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: './test/simple/fixture/c.js',
@@ -62,7 +62,7 @@ describe('WebpackPlugin', () => {
     });
 
     it('批量 source 检查', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: /(a|b|c)\.js$/,
@@ -75,7 +75,7 @@ describe('WebpackPlugin', () => {
     });
 
     it('批量 target 检查', async () => {
-      let error = await pluginTestBuild({
+      let { error } = await pluginTestBuild({
         moduleNoTrace: [
           {
             source: /a\.js$/,
@@ -85,6 +85,68 @@ describe('WebpackPlugin', () => {
       });
 
       expect(error.message).toContain('moduleNoTrace');
+    });
+  });
+
+  describe('moduleOnlyAsyncTrace', () => {
+    it('存在同步引用关系会报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/c.js',
+            target: './test/simple/fixture/index.js',
+          },
+        ],
+      });
+      expect(error.message).toContain('moduleOnlyAsyncTrace');
+    });
+
+    it('只有 import() 引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/c.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('只有 import() context 异步引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/import-context-x.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('只有 request lazy context 异步引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: 'require-context-lazy-',
+            target: 'b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
+    });
+
+    it('没有引用关系不报错', async () => {
+      let { error } = await pluginTestBuild({
+        moduleOnlyAsyncTrace: [
+          {
+            source: './test/simple/fixture/a.js',
+            target: './test/simple/fixture/b.js',
+          },
+        ],
+      });
+      expect(error).toBeFalsy();
     });
   });
 });
