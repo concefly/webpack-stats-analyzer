@@ -1,6 +1,6 @@
 {
   "name": "wsa",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "webpack stats 分析工具",
   "main": "src/lib/analyser.js",
   "bin": {
@@ -12,7 +12,8 @@
   "scripts": {
     "test": "jest --config jest.config.json",
     "ci": "npm run test",
-    "prepublish": "npm run ci"
+    "prepublish": "npm run ci",
+    "postpublish": "cnpm sync wsa"
   },
   "repository": {
     "type": "git",
