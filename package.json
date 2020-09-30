@@ -13,7 +13,7 @@
     "test": "jest --config jest.config.json",
     "ci": "npm run test",
     "prepublishOnly": "npm run ci",
-    "postpublish": "cnpm sync wsa"
+    "postpublish": "PACKAGE_VERSION=$(cat package.json | grep \\\"version\\\" | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && git tag v$PACKAGE_VERSION && git push origin --all && git push origin --tags && cnpm sync wsa"
   },
   "repository": {
     "type": "git",
