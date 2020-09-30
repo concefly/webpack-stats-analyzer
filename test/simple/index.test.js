@@ -13,9 +13,9 @@ describe('Analyser', () => {
     analyser.setStatsJson(statsJson);
   });
 
-  it('getModuleTrace', () => {
+  it('getModuleTrace - all', () => {
     const result = [
-      ...analyser.getModuleTrace('./test/simple/fixture/c.js', './test/simple/fixture/index.js'),
+      ...analyser.getModuleTrace('./test/simple/fixture/c.js', './test/simple/fixture/index.js', 'all'),
     ];
 
     expect(
@@ -57,7 +57,6 @@ describe('DepDefence', () => {
           },
         ],
       });
-
       expect(error.message).toContain('moduleNoTrace');
     });
 

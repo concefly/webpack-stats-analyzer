@@ -57,11 +57,12 @@ program
   .command('getModuleTrace <stats> <a> <b>')
   .description('查找模块引用路径')
   .option('-H, --human', '可读输出')
-  .action((stats, a, b, { human }) => {
+  .option('-a, --all', '输出所有路径')
+  .action((stats, a, b, { human, all }) => {
     const ins = createAnalyser(stats);
     let cnt = 1;
 
-    for (const trace of ins.getModuleTrace(a, b)) {
+    for (const trace of ins.getModuleTrace(a, b, all ? 'all' : 'one')) {
       const msgData = trace.map(t => {
         return {
           name: t.module.name,

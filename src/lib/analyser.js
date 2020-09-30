@@ -4,17 +4,13 @@
 /** @typedef {import('webpack').Stats.FnModules} Stats.FnModules */
 
 const _ = require('lodash');
-const digraph = require('flat-tree-helper/dist/lib/digraph');
+const { Digraph } = require('flat-tree-helper/dist/lib/digraph');
 
-/**
- * @typedef {{ setStatsJson, getStatsJson, filterModuleByNameLike, getModuleTrace }} Analyser
- */
 class Analyser {
   constructor(statsJson) {
-    /** @type { Stats.ToJsonOutput } */
-    this.statsJson = statsJson;
-
-    this._getModuleNameGroup = _.memoize(() => _.groupBy(this.statsJson.modules, 'name'));
+    if (statsJson) {
+      this.setStatsJson(statsJson);
+    }
   }
 
   _throw(msg) {
@@ -23,13 +19,9 @@ class Analyser {
 
   setStatsJson(statsJson) {
     this.statsJson = statsJson;
-  }
+    this._getModuleNameGroup = _.memoize(() => _.groupBy(this.statsJson.modules, 'name'));
 
-  getStatsJson() {
-    return this.statsJson;
-  }
-
-  *getModuleTrace(a, b) {
+    // 初始化 digraph
     const graph = [];
     this.statsJson.modules.forEach(m => {
       graph.push({
@@ -39,27 +31,45 @@ class Analyser {
         origin: m,
       });
     });
+    this.digraph = new Digraph(graph);
+  }
 
-    const generator = digraph.getAllTraceGenerator(graph, a, b);
+  getStatsJson() {
+    return this.statsJson;
+  }
 
-    // 转换 trace，补充信息
-    for (const trace of generator) {
-      yield trace.map((traceItem, index) => {
+  /**
+   * @param a - 起点 id
+   * @param b - 终点 id
+   * @param mode - 模式(`one` | `all`)，默认 one
+   */
+  getModuleTrace(a, b, mode) {
+    mode = mode || 'one';
+
+    const traceList = (mode === 'one'
+      ? [this.digraph.getOneTrace(a, b)]
+      : this.digraph.getAllTraceList(a, b)
+    ).filter(v => !!v);
+
+    const result = traceList.map(trace => {
+      return trace.map((t, index) => {
         const nextTraceItem = trace[index + 1];
 
         // 查找依赖原因
         /** @type {any[]} */
-        const reasons = _.get(traceItem, 'origin.reasons', []).filter(r => {
+        const reasons = _.get(t, 'origin.reasons', []).filter(r => {
           return r.moduleName === _.get(nextTraceItem, 'origin.name');
         });
 
         return {
-          module: traceItem.origin,
+          module: t.origin,
           next: nextTraceItem && nextTraceItem.origin,
           reasons: reasons.map(r => _.pick(r, ['moduleName', 'type', 'loc'])),
         };
       });
-    }
+    });
+
+    return result;
   }
 
   filterModuleByNameLike(q) {

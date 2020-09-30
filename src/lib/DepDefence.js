@@ -47,16 +47,17 @@ class DepDefence {
 
       // 调用各自的策略
       try {
-        (this._opt.moduleNoTrace || []).forEach(spec => {
-          for (const _ of this.moduleNoTrace(spec.source, spec.target)) {
-            void 0;
-          }
-        });
-        (this._opt.moduleOnlyAsyncTrace || []).forEach(spec => {
-          for (const _ of this.moduleOnlyAsyncTrace(spec.source, spec.target)) {
-            void 0;
-          }
-        });
+        if (this._opt.moduleNoTrace) {
+          this._opt.moduleNoTrace.forEach(spec => {
+            this.moduleNoTrace(spec.source, spec.target);
+          });
+        }
+
+        if (this._opt.moduleOnlyAsyncTrace) {
+          this._opt.moduleOnlyAsyncTrace.forEach(spec => {
+            this.moduleOnlyAsyncTrace(spec.source, spec.target);
+          });
+        }
       } catch (err) {
         return callback(err);
       }
@@ -65,7 +66,7 @@ class DepDefence {
     });
   }
 
-  *moduleNoTrace(a, b) {
+  moduleNoTrace(a, b) {
     const aTester = createStringTester(a);
     const bTester = createStringTester(b);
 
@@ -75,18 +76,17 @@ class DepDefence {
 
     for (const am of aModules) {
       for (const bm of bModules) {
-        const traceIter = this._analyser.getModuleTrace(am.name, bm.name);
+        const traceList = this._analyser.getModuleTrace(am.name, bm.name);
+        if (traceList.length === 0) continue;
 
         // 只要找出了 trace 就报异常
-        for (const trace of traceIter) {
-          const traceStr = this._humanizeTrace(trace);
-          this._throw(`存在依赖关系: ${traceStr}`, 'moduleNoTrace');
-        }
+        const traceStr = this._humanizeTrace(traceList[0]);
+        this._throw(`存在依赖关系: ${traceStr}`, 'moduleNoTrace');
       }
     }
   }
 
-  *moduleOnlyAsyncTrace(a, b) {
+  moduleOnlyAsyncTrace(a, b) {
     const aTester = createStringTester(a);
     const bTester = createStringTester(b);
 
@@ -97,7 +97,7 @@ class DepDefence {
     try {
       for (const am of aModules) {
         for (const bm of bModules) {
-          const traceIter = this._analyser.getModuleTrace(am.name, bm.name);
+          const traceIter = this._analyser.getModuleTrace(am.name, bm.name, 'all');
 
           for (const trace of traceIter) {
             const traceForTest = [...trace];

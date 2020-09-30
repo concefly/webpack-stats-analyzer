@@ -1,6 +1,6 @@
 {
   "name": "wsa",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "webpack stats 分析工具",
   "main": "src/lib/analyser.js",
   "bin": {
@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest --config jest.config.json",
     "ci": "npm run test",
-    "prepublish": "npm run ci",
+    "prepublishOnly": "npm run ci",
     "postpublish": "cnpm sync wsa"
   },
   "repository": {
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "commander": "^2.20.0",
-    "flat-tree-helper": "^0.2.0",
+    "flat-tree-helper": "^2.0.0",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15"
   }
